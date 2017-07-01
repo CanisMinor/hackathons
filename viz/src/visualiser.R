@@ -35,24 +35,28 @@ data_dates <- data.frame(
   end     = c(rep(NA, 300))
 )
 
+# Create fake data
+src <- c("Reynolds", "Reynolds", "Reynolds", "Reynolds", "Porter", "Porter", "Chamberlain", "Chamberlain", "LeCun")
+target <- c("Porter", "Chamberlain", "Whittle", "Hinton", "Ericsson", "Fairman", "George", "Reynolds", "Ising")
+networkData <- data.frame(src, target)
 
 
 ui <- fluidPage(
     
-    titlePanel("eJuris"),
+    #titlePanel("eJuris"),
 
       mainPanel(
         tabsetPanel(
           tabPanel("Dates", timevisOutput("timeline")),
           tabPanel("Places", leafletOutput("mymap"), p()),
-          tabPanel("People", tableOutput("table"))
+          tabPanel("People", simpleNetwork(networkData, zoom=TRUE))
         )
       )
 )
 
 server <- function(input, output, session) {
   output$timeline <- renderTimevis({
-    timevis(data_dates)
+    timevis(data_dates, fit=TRUE)
   })
   
   #points <- eventReactive(input$recalc, {
@@ -60,7 +64,7 @@ server <- function(input, output, session) {
   #}, ignoreNULL = FALSE)
   
   points <- eventReactive(input$recalc, {
-      cbind(data_cleaned$V3, data_cleaned$V4)
+      cbind(-data_cleaned$V4, data_cleaned$V3)
     }, ignoreNULL = FALSE)
     
   output$mymap <- renderLeaflet({leaflet() %>%
