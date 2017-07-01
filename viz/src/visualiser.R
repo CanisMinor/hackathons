@@ -9,7 +9,6 @@ library(igraph)
 r_colors <- rgb(t(col2rgb(colors()) / 255))
 names(r_colors) <- colors()
 
-
 # set working directory
 setwd("/home/cecilia/Documents/hackathons/viz/src")
 
@@ -39,11 +38,9 @@ ui <- fluidPage(
       
       mainPanel(
         tabsetPanel(
-          tabPanel("Dates", timevisOutput("timeline")), 
-          tabPanel("Places", leafletOutput("mymap"),
-                   p(),
-                   actionButton("recalc", "New points")), 
-          tabPanel("People", chart_link)
+          tabPanel("Dates", timevisOutput("timeline")),
+          tabPanel("Places", leafletOutput("mymap"), p(), actionButton("recalc", "New points")),
+          tabPanel("Table", tableOutput("table"))
         )
       )
     )
@@ -58,8 +55,7 @@ server <- function(input, output, session) {
     cbind(rnorm(40) * 2 + 13, rnorm(40) + 48)
   }, ignoreNULL = FALSE)
   
-  output$mymap <- renderLeaflet({
-    leaflet() %>%
+  output$mymap <- renderLeaflet({leaflet() %>%
       addProviderTiles(providers$Stamen.TonerLite,
                        options = providerTileOptions(noWrap = TRUE)
       ) %>%
