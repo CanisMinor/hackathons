@@ -3,6 +3,7 @@ library(timevis)
 library(leaflet)
 library(plotly)
 library(igraph)
+library(lubridate)
 
 
 # create colours for map
@@ -16,6 +17,8 @@ setwd("/home/cecilia/Documents/hackathons/viz/src")
 tags = read.csv("../data/test_data.txt")
 names = read.csv("../data/names.txt")
 states = read.csv("../data/states.txt")
+data_cleaned = read.csv2(file="../../refined_data/clean_data.txt", sep=",", dec=".", header=FALSE, colClasses=c(NA, NA, NA, NA, NA, "Date"))
+
 
 data <- data.frame(
   id      = 1:4,
@@ -26,9 +29,11 @@ data <- data.frame(
   end     = c(NA, NA, "2016-02-04", NA)
 )
 
+
+
 ui <- fluidPage(
     
-    titlePanel("eJuries"),
+    titlePanel("eJuris"),
     
     sidebarLayout(
       
@@ -40,7 +45,7 @@ ui <- fluidPage(
         tabsetPanel(
           tabPanel("Dates", timevisOutput("timeline")),
           tabPanel("Places", leafletOutput("mymap"), p(), actionButton("recalc", "New points")),
-          tabPanel("Table", tableOutput("table"))
+          tabPanel("People", tableOutput("table"))
         )
       )
     )
@@ -64,3 +69,4 @@ server <- function(input, output, session) {
 }
 
 shinyApp(ui = ui, server = server)
+
