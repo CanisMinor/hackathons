@@ -30,12 +30,20 @@ filetypes = { "docx": ("word", "Word document"),
               "pdf": ("pdf", "PDF document"),
               "msg": ("outlook", "E-mail")
               }
-              
 
+places = {}
+
+def loadplaces():
+    global places
+    with open("bigdat.pickle","rb") as f:
+        places = pickle.load(f)
+    ppr("Loaded "+str(len(places))+" places")
+    
 def M():
     if len(sys.argv)<2:
         print("Usage:\n./filer.py <Directory Name>")
         return
+    loadplaces()
     filedir = sys.argv[1]
     outname = filedir + ".pickle"
     if len(sys.argv)>=3:
@@ -97,6 +105,9 @@ def processtext(tags,afile):
 # avoid some false matches
 mindate = 1800
 
+removechars = ''.join(c for c in map(chr, range(256)) if not c.isalnum() and not c==' ')
+removetab = str.maketrans({c:None for c in removechars})
+
 def processtextline(tags,line):
     ls = line.strip()
     if type(ls) == bytes:
@@ -114,7 +125,26 @@ def processtextline(tags,line):
         addperson(tags, ls[5:], True)
     if lsl.startswith("to:"):
         addperson(tags, ls[3:], True)
-        
+    lsalpha = ls.translate(removetab) # keep upper/lower for place names
+    words = lsalpha.split()
+    for x in words:
+        if x in places:
+            addplace(tags, x)
+    w2 = [ words[i]+" "+words[i+1] for i in range(len(words)-1)]
+    for x in w2:
+        print("x2 "+x)
+        if x in places:
+            addplace(tags, x)
+
+def addplace(tags, place):
+    if places[place][0] == 'v':
+        ppr("ignoring village ",place)
+        return
+    ppr("add place ",place)
+    if "places" not in tags:
+        tags["places"] = {}
+    tags["places"][place] = places[place]
+    
 
 def adddate(tags,y,m,d,head = False):
     ppr("add date ",y,m,d)
@@ -144,10 +174,11 @@ def processimage(tags,afile):
 
 def processaudio(tags,afile):
     ppr("process audio")
-    textract(tags,afile)
+    # connects to google! # textract(tags,afile)
 
 def processvideo(tags,afile):
     ppr("process video")
+    # potentially textract(tags,afile) or ffmpeg then textract
 
 def processpdf(tags,afile):
     ppr("process pdf")
