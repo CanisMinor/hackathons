@@ -5,6 +5,7 @@ import pickle
 import subprocess
 import dateutil.parser as dp
 import datetime as dt
+import textract as tx
 
 pp=1
 if (pp):
@@ -123,17 +124,24 @@ def processpdf(tags,afile):
     ppr("process pdf")
     ptxt = subprocess.check_output(["pdftotext",afile,"-"]).decode("utf8")
     for line in ptxt.splitlines():
-        ppr("splitline: ",line)
         processtextline(tags,line)
     
 def processmsg(tags,afile):
     ppr("process outlook msg")
+    textract(tags,afile)
 
 def processword(tags,afile):
     ppr("process outlook word")
+    textract(tags,afile)
 
 def processwordold(tags,afile):
     ppr("process outlook wordold")
+    textract(tags,afile)
+
+def textract(tags,afile):
+    ptxt = tx.process(afile)
+    for line in ptxt.splitlines():
+        processtextline(tags,line.decode("utf8"))
 
 
 
