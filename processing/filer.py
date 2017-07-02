@@ -144,6 +144,7 @@ def processimage(tags,afile):
 
 def processaudio(tags,afile):
     ppr("process audio")
+    textract(tags,afile)
 
 def processvideo(tags,afile):
     ppr("process video")
