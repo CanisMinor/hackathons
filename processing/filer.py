@@ -93,26 +93,54 @@ def processtext(tags,afile):
         for line in f:
             processtextline(tags,line)
 
+# somewhat arbitrary minimum date (year), to
+# avoid some false matches
+mindate = 1800
+
 def processtextline(tags,line):
-    ppr("...",line.strip())
+    ls = line.strip()
+    if type(ls) == bytes:
+        ls = ls.decode("utf8")
+    ppr("...",ls)
     try:
-        date = dp.parse(line.strip(), fuzzy=True, dayfirst=True, default=dt.datetime(1,1,1))
-        if date.year != 1:
+        date = dp.parse(ls, fuzzy=True, dayfirst=True, default=dt.datetime(1,1,1))
+        if date.year >= mindate:
             adddate(tags, date.year, date.month, date.day)
     except:
         ppr("except!")
         pass
+    lsl = ls.lower()
+    if lsl.startswith("from:"):
+        addperson(tags, ls[5:], True)
+    if lsl.startswith("to:"):
+        addperson(tags, ls[3:], True)
+        
 
-def adddate(tags, y,m,d):
+def adddate(tags,y,m,d,head = False):
     ppr("add date ",y,m,d)
     if "dates" not in tags:
         tags["dates"] = []
-    tags["dates"].append((y,m,d))
-    
+    if (y,m,d) not in tags["dates"]: # avoid repeats
+        if head:
+            tags["dates"].insert(0,(y,m,d))
+        else:
+            tags["dates"].append((y,m,d))
+            
 
+def addperson(tags, name, head = False):
+    ppr("add person ",name,head)
+    if "people" not in tags:
+        tags["people"] = []
+    if name not in tags["people"]:
+        if head:
+            tags["people"].insert(0,name)
+        else:
+            tags["people"].append(name)
+            
 
 def processimage(tags,afile):
     ppr("process image")
+    textract(tags,afile)
 
 def processaudio(tags,afile):
     ppr("process audio")
@@ -122,7 +150,7 @@ def processvideo(tags,afile):
 
 def processpdf(tags,afile):
     ppr("process pdf")
-    ptxt = subprocess.check_output(["pdftotext",afile,"-"]).decode("utf8")
+    ptxt = subprocess.check_output(["pdftotext",afile,"-"])
     for line in ptxt.splitlines():
         processtextline(tags,line)
     
@@ -141,7 +169,7 @@ def processwordold(tags,afile):
 def textract(tags,afile):
     ptxt = tx.process(afile)
     for line in ptxt.splitlines():
-        processtextline(tags,line.decode("utf8"))
+        processtextline(tags,line)
 
 
 
